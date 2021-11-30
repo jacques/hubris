@@ -40,4 +40,5 @@ jobs:
         run: rustup show
 
       - name: Run cargo xtask license-check
-          run: cargo xtask license-check
+          run: |
+            cargo xtask license-check
