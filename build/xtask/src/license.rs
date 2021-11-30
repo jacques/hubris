@@ -16,6 +16,14 @@ const LICENSE_HEADER: &str =
 
 ";
 
+/// alternative header with //s as bookends
+const LICENSE_HEADER_ALT: &str = "//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+";
+
 pub fn check() -> Result<bool> {
     // assume only the best about our codebase
     let mut fail = false;
@@ -39,17 +47,27 @@ pub fn check() -> Result<bool> {
             continue;
         }
 
-        let f = File::open(entry.path())?;
-        let reader = BufReader::with_capacity(LICENSE_HEADER.len(), f);
+        let check_header = |header: &str| -> Result<bool> {
+            let f = File::open(entry.path())?;
+            let reader = BufReader::with_capacity(header.len(), f);
+            for (text, header) in reader.lines().zip(header.lines()) {
+                let text = text?;
 
-        for (text, header) in reader.lines().zip(LICENSE_HEADER.lines()) {
-            let text = text?;
+                if text != header {
+                    return Ok(false);
+                }
+            }
 
-            if text != header {
+            Ok(true)
+        };
+
+        // !check_header(LICENSE_HEADER)? && !check_header(LICENSE_HEADER_ALT)?;
+
+        if !check_header(LICENSE_HEADER)? {
+            if !check_header(LICENSE_HEADER_ALT)? {
                 fail = true;
                 let path = entry.path().strip_prefix(&root)?;
                 println!("{}: missing header", path.display());
-                break;
             }
         }
     }
