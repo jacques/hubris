@@ -40,6 +40,4 @@ jobs:
         run: rustup show
 
       - name: Run cargo xtask license-check
-        uses: actions-rs/cargo@v1
-        with:
-          command: xtask license-check
+          run: cargo xtask license-check
